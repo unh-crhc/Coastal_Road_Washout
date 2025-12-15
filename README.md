@@ -1,14 +1,15 @@
 # Coastal Road Resilience
 
 ## Project Overview
-
-Geospatial analysis and hydraulic modeling to quantify the vulnerability of critical coastal infrastructure (e.g., Highway A1) to climate change stressors (sea-level rise, storm surge). The project utilizes high-resolution terrain data to simulate inundation scenarios and provide prioritized, cost-effective mitigation strategies for road segment reinforcement and adaptation.
+- [ ] Add project overview
 
 ---
 
 ## Requirements
 
 ### Software Dependencies
+
+- [ ] Add dependency libraries (the ones you installed using pip)
 
 | Component | Minimum Version | Notes |
 | :--- | :--- | :--- |
