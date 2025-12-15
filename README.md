@@ -23,7 +23,7 @@ Install required Python libraries using the provided environment file:
 pip install -r requirements.txt
 ```
 
-(The key packages are `geopandas`, `rasterio`, `numpy`, and `scipy`.)
+(The key packages are `numpy`, and `scipy`.)
 
 ### Data Inputs
 
