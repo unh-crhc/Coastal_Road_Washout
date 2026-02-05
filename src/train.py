@@ -1,3 +1,4 @@
+import os
 import pandas as pd # Package for csvs and data
 import numpy as np # Used for numerical and scientific computing
 import joblib # Used for parallel computing, common in data science
@@ -8,8 +9,13 @@ from sklearn.impute import SimpleImputer # Handles missing values by replacing t
 from sklearn.ensemble import RandomForestClassifier # Imports the random forest modeling package
 from sklearn.model_selection import train_test_split # Splits data sets into training and testing groups
 
+
+root = os.path.dirname(__file__)
+models_dir = os.path.join(root, "../models")
+
 # Load Maine data
-df = pd.read_csv("../data/ME_roads_all_info_with_structure.csv")
+data_file = os.path.join(root, "../data/processed/ME/processed.csv")
+df = pd.read_csv(data_file)
 
 # Select the input features and target column (Damage_Status)
 input_features = [
