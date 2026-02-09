@@ -22,6 +22,17 @@ df = pd.read_csv(data_file)
 df[target_column] = df[target_column].map({'No Damage': 0, 'Damage': 1})
 df = df.dropna(subset=[target_column])
 
+# Creates containers for te results
+results = {
+    "conf_matrices": [],
+    "accuracies": [],
+    "balanced_accuracies": [],
+    "cohen_kappas": [],
+    "precisions": [],
+    "recalls": [],
+    "f1s": []
+}
+
 # Train models 
 for run in range(n_runs):
     # Loads presaved train/test splits for consistency
