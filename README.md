@@ -78,3 +78,12 @@ python src/train_dt.py
 ```
 
 *This script generates `washout_model_run_{run}.pkl` and required boundary condition files.*
+
+### Evaluating Decision Tree Models
+To evaluate the trained models, run the following command:
+
+```bash
+python src/evaluate_dt.py
+```
+This will print the evaluation metrics (e.g., accuracy, precision, recall) for each model and save the results in `/results/predictions.csv`.
+
