@@ -58,7 +58,7 @@ To train the Random Forest models, run the python src/train.py. This file prepar
 python src/train_rf.py
 ```
 
-*This script generates `washout_model_run_{run}.pkl` and required boundary condition files.*
+*This script generates `washout_model_run_{run}.pkl`.*
 
 ### Evaluating RF Models
 To evaluate the trained models, run the following command:
@@ -77,7 +77,7 @@ To train the Decision Tree models, run the python src/train_dt.py. This file pre
 python src/train_dt.py
 ```
 
-*This script generates `washout_model_run_{run}.pkl` and required boundary condition files.*
+*This script generates `washout_model_run_{run}.pkl`.*
 
 ### Evaluating Decision Tree Models
 To evaluate the trained models, run the following command:
