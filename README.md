@@ -1,7 +1,33 @@
 # Coastal Road Resilience
 
 ## Project Overview
-- [ ] Add project overview
+This repository contains the code and workflows for predicting coastal road washout using machine learning, based on observed roadway damage data from Maine (ME), New Hampshire (NH), Rhode Island (RI), Texas (TX), and Mississippi (MS). The project explores both full-feature and simplified predictive models, evaluates their transferability across states, and includes a linear regression approach derived from Texas data.
+
+The repository includes:
+1.	Full Random Forest (RF) Model
+o	Trained on Maine data using 31 roadway, topographic, and storm-related features.
+o	Provides baseline performance for damage classification.
+o	Evaluated on accuracy, balanced accuracy, Cohen’s kappa, AUC, and class-specific precision, recall, and F1.
+2.	Three-Feature Random Forest Model
+o	Trained on Maine data using three key features:
+	Minimum elevation (Z_Min)
+	Distance to the coast (Distance_to_Coast_m)
+	Relative minimum elevation (Rel_Elev_Min)
+o	Demonstrates that a small set of key variables can strongly predict road vulnerability.
+o	Maintains performance comparable to the full RF model.
+3.	Simple Decision Tree (DT) Model
+o	Trained on Maine data using the same three key features. 
+o	Allows interpretable rules for road damage risk classification.
+4.	Linear Regression Model
+o	Developed in “Fragility Analysis of Coastal Roadways and Performance Assessment of Coastal Transportation Systems Subjected to Storm Hazards” by Darestani et al., 2021.
+o	Trained on Texas data using:
+	Distance to the coast (Distance_to_Coast_m)
+	Inundation duration (Inundation_Duration_Min)
+o	Performance metrics include accuracy, balanced accuracy, Cohen’s kappa, AUC, and class-specific precision, recall, and F1.
+5.	Screening Decision Tree
+o	A single, interpretable DT derived from median splits in the best-performing simple DTs across all states.
+o	Encodes the most common thresholds governing road vulnerability.
+o	Applied across ME, NH, RI, TX, and MS for consistent, rule-based predictions.
 
 ---
 
