@@ -5,9 +5,9 @@ This repository contains the code and workflows for predicting coastal road wash
 
 The repository includes:
 1.	Full Random Forest (RF) Model
-o	Trained on Maine data using 31 roadway, topographic, and storm-related features.
-o	Provides baseline performance for damage classification.
-o	Evaluated on accuracy, balanced accuracy, Cohen’s kappa, AUC, and class-specific precision, recall, and F1.
+        - Trained on Maine data using 31 roadway, topographic, and storm-related features.
+        - Provides baseline performance for damage classification.
+        - Evaluated on accuracy, balanced accuracy, Cohen’s kappa, AUC, and class-specific precision, recall, and F1.
 2.	Three-Feature Random Forest Model
 o	Trained on Maine data using three key features:
 	Minimum elevation (Z_Min)
