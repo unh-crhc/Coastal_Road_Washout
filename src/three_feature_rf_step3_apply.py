@@ -16,7 +16,7 @@ os.makedirs(results_dir, exist_ok=True)
 # Model inputs, target (damage), states applied to, and number of model runs
 input_features = ['Z_Min', 'Distance_to_Coast_m', 'Rel_Elev_Min']
 target_column = 'Damage_Status'
-states = ["ME", "NH", "RI"]
+states = ["NH", "RI", "TX", "MS"]
 n_models = 100 # Should match the number of trained models
 
 # Loads the trained models

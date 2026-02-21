@@ -4,20 +4,20 @@ import pandas as pd # Package for csvs and data
 import numpy as np # Used for numerical and scientific computing
 from sklearn.metrics import ( # Imports for performance analysis
     confusion_matrix, accuracy_score, balanced_accuracy_score,
-    cohen_kappa_score, precision_recall_fscore_support
+    cohen_kappa_score, precision_recall_fscore_support,
+    roc_auc_score  # NEW
 )
 
-# Directory, provides paths to the models and splits
+# Directory with paths to models and the train/test stplits used by the full RF
 script_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.abspath(os.path.join(script_dir, "../models"))
-splits_dir = os.path.abspath(os.path.join(script_dir, "../splits"))
-n_runs = 100 # Number of runs should match the number of trained models
-input_features = ['Z_Min', 'Distance_to_Coast_m', 'Rel_Elev_Min'] # Input features should match
+models_dir = os.path.join(script_dir, "../models")
+splits_dir = os.path.join(script_dir, "../splits")
+n_runs = 100 # Number of runs
+model_type = "simple_dt" # Model name
+input_features = ['Z_Min', 'Distance_to_Coast_m', 'Rel_Elev_Min'] # Input features
+target_column = 'Damage_Status'
 
-# Naming for reference
-model_type = "three_feature_rf"
-
-# Creates containers for the results
+# Creates containers for te results
 results = {
     "conf_matrices": [],
     "accuracies": [],
@@ -25,86 +25,92 @@ results = {
     "cohen_kappas": [],
     "precisions": [],
     "recalls": [],
-    "f1s": []
+    "f1s": [],
+    "aucs": []  # NEW
 }
 
-# Evaluates each of the 100 trained models
+# Iterates through each training run
 for run in range(n_runs):
-    # Load pre-saved test splits
+    # Load X_test and y_test for each run, training and testing splits
     X_test_path = os.path.join(splits_dir, f"X_test_run_{run}.csv")
     y_test_path = os.path.join(splits_dir, f"y_test_run_{run}.csv")
 
-    # If files are missing, skips run and gives error message
+    # If no splits found for this run it prints this message
     if not (os.path.exists(X_test_path) and os.path.exists(y_test_path)):
-        print(f"Warning: Missing test split for run {run}. Skipping. Train full RF to establish splits")
+        print(f"Warning: Missing test split for run {run}. Skipping. Train full RF first")
         continue
 
-    # Loads test features and keeps only the 3 input features, also loads the test labels (damage or no damage)
-    X_test = pd.read_csv(X_test_path)[input_features].apply(pd.to_numeric, errors='coerce')
+    # Reads the csvs and selects predictors and target
+    X_test = pd.read_csv(X_test_path)[input_features]
     y_test = pd.read_csv(y_test_path).squeeze()
 
-    # Loads the trained models
+    # Ensures all columns are numeric
+    X_test = X_test.apply(pd.to_numeric, errors='coerce')
+
+    # Loads the trained DT pipeline
     model_file = os.path.join(models_dir, f"{model_type}_model_run_{run}.pkl")
     if not os.path.exists(model_file):
-        print(f"Warning: {model_type} model for run {run} missing. Skipping.") # Error message if no models are found, skips if no model found
+        print(f"Warning: Model for run {run} missing. Skipping.")
         continue
 
-    # Loads model pipeline
+    # Loads the pipeline
     pipeline = joblib.load(model_file)
 
-    # Runs models and gets outputs
+    # Uses the model to predict on the X_test subset
     y_pred = pipeline.predict(X_test)
+    y_prob = pipeline.predict_proba(X_test)[:, 1]  # NEW
 
-    # Compute performance metrics
+    # Computes confusion matrix and performance metrics for each run
     results["conf_matrices"].append(confusion_matrix(y_test, y_pred, labels=[0,1]))
     results["accuracies"].append(accuracy_score(y_test, y_pred))
     results["balanced_accuracies"].append(balanced_accuracy_score(y_test, y_pred))
     results["cohen_kappas"].append(cohen_kappa_score(y_test, y_pred))
+    results["aucs"].append(roc_auc_score(y_test, y_prob))  # NEW
 
-    # Computes class level performance metrics, precision, recall, and F1
+    # Computes class specific precision, recall, and F1 for each run
     p, r, f1, _ = precision_recall_fscore_support(
         y_test, y_pred, labels=[0,1], zero_division=0
     )
-
-    # Stores class level performance metrics
     results["precisions"].append(p)
     results["recalls"].append(r)
     results["f1s"].append(f1)
 
-    # Prints a completion note for each run, progress tracking
+    # Shows progress
     print(f"Completed run {run+1}/{n_runs}")
 
-# Aggregates results
-print(f"\n{model_type.upper()}")
+# Computes averaged results
+print(f"\nAveraged Confusion Matrix of Simple DT Training and Testing")
 
-# Computes mean and standard deviation of the confusion matrices across runs
+# Calculates mean and standard deviation for confusion matrices across runs
 if len(results["conf_matrices"]) == 0:
-    print("No results collected.") # Error message
+    print("No results collected.")
 else:
+    # Confusion matrices
     cms = np.array(results["conf_matrices"])
     avg_cm = cms.mean(axis=0)
     std_cm = cms.std(axis=0)
-
-    # Prints average confusion matrices and standard deviations
     print("Average Confusion Matrix:")
     print(avg_cm)
     print("Std of Confusion Matrix:")
     print(std_cm)
 
-    # Computes summary metrics with standard deviation
+    # Computes mean and standard deviation of performance metrics across runs
     acc = np.mean(results["accuracies"])
     acc_std = np.std(results["accuracies"])
     bal = np.mean(results["balanced_accuracies"])
     bal_std = np.std(results["balanced_accuracies"])
     kap = np.mean(results["cohen_kappas"])
     kap_std = np.std(results["cohen_kappas"])
+    auc = np.mean(results["aucs"])        # NEW
+    auc_std = np.std(results["aucs"])     # NEW
 
-    # Prints summary statistics 
+    # Prints performance metrics with standard deviation
     print(f"Accuracy: {acc:.3f} ± {acc_std:.3f}")
     print(f"Balanced Accuracy: {bal:.3f} ± {bal_std:.3f}")
     print(f"Cohen Kappa: {kap:.3f} ± {kap_std:.3f}")
+    print(f"AUC: {auc:.3f} ± {auc_std:.3f}")  # NEW
 
-    # Computes class-level metrics
+    # Computes mean and standard deviation of class level metrics across runs
     precision = np.mean(results["precisions"], axis=0)
     precision_std = np.std(results["precisions"], axis=0)
     recall = np.mean(results["recalls"], axis=0)
@@ -112,7 +118,7 @@ else:
     f1 = np.mean(results["f1s"], axis=0)
     f1_std = np.std(results["f1s"], axis=0)
 
-    # Prints class level metrics
+    # Prints metrics
     print("\nClass-level metrics (0 = No Damage, 1 = Damage)")
     for i, cls in enumerate([0, 1]):
         print(
@@ -123,4 +129,4 @@ else:
         )
 
 # Completion note
-print(f"\nCompleted evaluation of {n_runs} runs for {model_type}")
+print(f"\nCompleted evaluation of {n_runs} runs for {model_type}.")

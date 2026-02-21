@@ -4,6 +4,7 @@ import numpy as np  # Used for numerical and scientific computing
 import joblib  # Used for parallel computing
 from sklearn.linear_model import LogisticRegression # Logistic regression for platt scaling
 from scipy.special import logit, expit # logit converts probabilities to log-odds abd expit converts log odds to probabilities
+from sklearn.model_selection import train_test_split # Creates training and testing splits
 
 # Directory, establish paath to data, models, and results
 base_dir = os.path.dirname(__file__)
@@ -13,7 +14,7 @@ results_dir = os.path.join(base_dir, "../results")
 os.makedirs(results_dir, exist_ok=True) # creates a results directory if one doesn't exist
 
 # Defines which data sets will be used
-states = ["ME", "NH", "RI"]
+states = ["NH", "RI", "TX", "MS"]
 
 # Loads the trained model runs, goes through each one, creates an empty list to hold pipelines
 models = []
@@ -44,15 +45,21 @@ def align_schema(df, required_features):
             df[col] = np.nan
     return df[required_features]
 
-# Load the pre-saved calibration holdout that was never seen during model training
-calib_path = os.path.join(base_dir, "../splits/full_rf_calibration_holdout.csv")
-calib_df = pd.read_csv(calib_path)
-# calib_df['Damage_Status'] = calib_df['Damage_Status'].map({'No Damage': 0, 'Damage': 1})
-calib_df = calib_df.dropna(subset=['Damage_Status'])
+# Loads the ME dataset, converts damage statust to binary, 
+me_df = pd.read_csv(os.path.join(data_dir, "ME", "processed.csv"))
+me_df['Damage_Status'] = me_df['Damage_Status'].map({'No Damage': 0, 'Damage': 1})
+me_df = me_df.dropna(subset=['Damage_Status'])
 
-# Aligns the data, prepares features and target (damage)
-X_calib = align_schema(calib_df, input_features)
-y_calib = calib_df['Damage_Status']
+# Aligns the data, prepares features and targe (damage)
+X_me = align_schema(me_df, input_features)
+y_me = me_df['Damage_Status']
+
+# Split Maine for platt calibration, this is different than the training and testing splits
+# X_train and y_train are not used at all, they exist only to define the split
+# Right now this only uses 30% of the data for platt scaling
+X_train, X_calib, y_train, y_calib = train_test_split(
+    X_me, y_me, test_size=0.3, stratify=y_me, random_state=42
+)
 
 # Gets per-model probabilities and averages them to form ensemble probabilities
 probs_calib = np.array([m.predict_proba(X_calib)[:,1] for m in models]).mean(axis=0)

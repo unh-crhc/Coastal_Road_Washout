@@ -5,7 +5,7 @@ import joblib # Used for parallel computing,
 from sklearn.model_selection import train_test_split # Splits data sets into training and testing groups
 from sklearn.metrics import ( # Imports for performance analysis
     confusion_matrix, accuracy_score, balanced_accuracy_score,
-    cohen_kappa_score, precision_recall_fscore_support
+    cohen_kappa_score, precision_recall_fscore_support, roc_auc_score
 )
 
 # Directory, for scripts and paths to models
@@ -18,12 +18,12 @@ df = pd.read_csv(data_file)
 
 # Lists the input features and the target variable (Damage_Status)
 input_features = [
-    'aadt_type','priority','fedfunccls','capacity','jurisdictn','num_lanes',
+    'faadt','priority','fedfunccls','capacity','jurisdictn','num_lanes',
     'st_urbrur','surfc_type','Shape_Leng','Z_Min','Z_Max','Z_Mean',
     'Min_Slope','Max_Slope','Avg_Slope','Max_Height',
     'Return_Period','Distance_to_Coast_m','Max_WVHT','Max_Dir',
     'Avg_WVHT','Avg_Dir','Max_WSPD','Max_WSPD_Dir','Avg_WSPD','Avg_WSPD_Dir',
-    'Precipitation','Rel_Elev_Min','Rel_Elev_Mean','Rel_Elev_Max'
+    'Precipitation','Rel_Elev_Min','Rel_Elev_Mean','Rel_Elev_Max', 'Inundation_Duration_Min'
 ]
 target_column = 'Damage_Status'
 
@@ -46,7 +46,8 @@ results = {
     "cohen_kappas": [],
     "precisions": [],
     "recalls": [],
-    "f1s": []
+    "f1s": [],
+    "aucs": []
 }
 
 # Evaluates each trained model
@@ -71,12 +72,14 @@ for run in range(n_runs):
 
     # Predictions
     y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)[:, 1]
 
    # Store metrics
     results["conf_matrices"].append(confusion_matrix(y_test, y_pred, labels=[0,1]))
     results["accuracies"].append(accuracy_score(y_test, y_pred))
     results["balanced_accuracies"].append(balanced_accuracy_score(y_test, y_pred))
     results["cohen_kappas"].append(cohen_kappa_score(y_test, y_pred))
+    results["aucs"].append(roc_auc_score(y_test, y_prob))
 
     # Class level metrics
     p, r, f1, _ = precision_recall_fscore_support(
@@ -113,11 +116,14 @@ bal = np.mean(results["balanced_accuracies"])
 bal_std = np.std(results["balanced_accuracies"])
 kap = np.mean(results["cohen_kappas"])
 kap_std = np.std(results["cohen_kappas"])
+auc = np.mean(results["aucs"])        
+auc_std = np.std(results["aucs"])      
 
 # Prints summary metrics with standard deviation
 print(f"\nAccuracy: {acc:.3f} ± {acc_std:.3f}")
 print(f"Balanced Accuracy: {bal:.3f} ± {bal_std:.3f}")
 print(f"Cohen Kappa: {kap:.3f} ± {kap_std:.3f}")
+print(f"AUC: {auc:.3f} ± {auc_std:.3f}")
 
 # Class level metrics
 precision = np.mean(results["precisions"], axis=0)

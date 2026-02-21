@@ -8,16 +8,6 @@ from sklearn.preprocessing import OneHotEncoder # Converts categorical variables
 from sklearn.impute import SimpleImputer # Handles missing values by replacing them with a specified strategy (mean, median, or most frequent)
 from sklearn.ensemble import RandomForestClassifier # Imports the random forest modeling package
 from sklearn.model_selection import train_test_split # Splits data sets into training and testing groups
-from sklearn.metrics import (
-    confusion_matrix,
-    accuracy_score,
-    balanced_accuracy_score,
-    cohen_kappa_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    precision_recall_fscore_support
-)
 
 # Directory guide, defines directories for storing trained models and dataset splits, creates them if they do not already exist
 script_dir = os.path.dirname(__file__)
@@ -34,12 +24,12 @@ df = pd.read_csv(data_file)
 
 # Lists the input features and the target variable (Damage_Status)
 input_features = [
-    'aadt_type','priority','fedfunccls','capacity','jurisdictn','num_lanes',
+    'faadt','priority','fedfunccls','capacity','jurisdictn','num_lanes',
     'st_urbrur','surfc_type','Shape_Leng','Z_Min','Z_Max','Z_Mean',
     'Min_Slope','Max_Slope','Avg_Slope','Max_Height',
     'Return_Period','Distance_to_Coast_m','Max_WVHT','Max_Dir',
     'Avg_WVHT','Avg_Dir','Max_WSPD','Max_WSPD_Dir','Avg_WSPD','Avg_WSPD_Dir',
-    'Precipitation','Rel_Elev_Min','Rel_Elev_Mean','Rel_Elev_Max'
+    'Precipitation','Rel_Elev_Min','Rel_Elev_Mean','Rel_Elev_Max', 'Inundation_Duration_Min'
 ]
 target_column = 'Damage_Status'
 
@@ -47,32 +37,14 @@ target_column = 'Damage_Status'
 df[target_column] = df[target_column].map({'No Damage': 0, 'Damage': 1})
 df = df.dropna(subset=[target_column])
 
-# Hold out a fixed calibration set up front so it is never seen during model training
-train_pool, calib_holdout = train_test_split(
-    df, test_size=0.1, stratify=df[target_column], random_state=42
-)
-
-# Persist the calibration holdout for downstream probability calibration
-calib_path = os.path.join(splits_dir, "full_rf_calibration_holdout.csv")
-calib_holdout.to_csv(calib_path, index=False)
-
-# Subsequent model training draws only from the training pool to avoid leakage
-damage_df = train_pool[train_pool[target_column] == 1]
-nodamage_df = train_pool[train_pool[target_column] == 0]
+# Separates the data into damage and no damage subsets, this is done for controlled sampling of training and testing subsets
+damage_df = df[df[target_column] == 1]
+nodamage_df = df[df[target_column] == 0]
 
 # Identifies the numerical and categorical columns for preprocessing
 numerical_cols = df[input_features].select_dtypes(include=np.number).columns
 categorical_cols = df[input_features].select_dtypes(include='object').columns
 
-results = {
-    "conf_matrices": [],
-    "accuracies": [],
-    "balanced_accuracies": [],
-    "cohen_kappas": [],
-    "precisions": [],
-    "recalls": [],
-    "f1s": []
-}
 # Preprocessing pipeline
 # Preprocessor: defines how to handle missing data and categorical encoding:
 # Missing numbers ('num') replaced with mean of the column
@@ -133,76 +105,5 @@ for run in range(n_runs):
     joblib.dump(pipeline, model_path)
     print(f"Saved full RF model {run+1}/{n_runs}") # Proress not
 
-    y_pred = pipeline.predict(X_test)
-
-    # Confusion matrix (order matches sorted unique labels unless you pass labels=...)
-    cm = confusion_matrix(y_test, y_pred)
-
-    accuracy = accuracy_score(y_test, y_pred)
-    balanced_acc = balanced_accuracy_score(y_test, y_pred)
-    kappa = cohen_kappa_score(y_test, y_pred)
-
-    p, r, f1, _ = precision_recall_fscore_support(
-        y_test, y_pred, labels=[0,1], zero_division=0
-    )
-    # Store results
-    results["conf_matrices"].append(cm)
-    results["accuracies"].append(accuracy)
-    results["balanced_accuracies"].append(balanced_acc)
-    results["cohen_kappas"].append(kappa)
-    results["precisions"].append(p)
-    results["recalls"].append(r)
-    results["f1s"].append(f1)
-
 # Print lets you know when model training is completed
 print(f"Done training {n_runs} models")
-
-# Computes mean and standard deviation of confusion matrices
-cms = np.array(results["conf_matrices"])
-avg_cm = cms.mean(axis=0)
-std_cm = cms.std(axis=0)
-
-# Prints average confusion matrix
-print("\nAverage Confusion Matrix:")
-print(pd.DataFrame(avg_cm, index=["True No-Damage","True Damage"],
-                           columns=["Pred No-Damage","Pred Damage"]))
-
-# Prints standard deviation of average confusion matrix
-print("\nConfusion Matrix Standard Deviation:")
-print(pd.DataFrame(std_cm, index=["True No-Damage","True Damage"],
-                           columns=["Pred No-Damage","Pred Damage"]))
-
-# Aggregates summary metrics
-acc = np.mean(results["accuracies"])
-acc_std = np.std(results["accuracies"])
-bal = np.mean(results["balanced_accuracies"])
-bal_std = np.std(results["balanced_accuracies"])
-kap = np.mean(results["cohen_kappas"])
-kap_std = np.std(results["cohen_kappas"])
-
-# Prints summary metrics with standard deviation
-print(f"\nAccuracy: {acc:.3f} ± {acc_std:.3f}")
-print(f"Balanced Accuracy: {bal:.3f} ± {bal_std:.3f}")
-print(f"Cohen Kappa: {kap:.3f} ± {kap_std:.3f}")
-
-# Class level metrics
-precision = np.mean(results["precisions"], axis=0)
-precision_std = np.std(results["precisions"], axis=0)
-recall = np.mean(results["recalls"], axis=0)
-recall_std = np.std(results["recalls"], axis=0)
-f1 = np.mean(results["f1s"], axis=0)
-f1_std = np.std(results["f1s"], axis=0)
-
-# Prints class level metrics
-
-print("\nClass-level metrics (0 = No Damage, 1 = Damage)")
-for i, cls in enumerate([0, 1]):
-    print(
-        f"Class {cls}: "
-        f"Precision {precision[i]:.3f} ± {precision_std[i]:.3f}, "
-        f"Recall {recall[i]:.3f} ± {recall_std[i]:.3f}, "
-        f"F1 {f1[i]:.3f} ± {f1_std[i]:.3f}"
-    )
-
-# Completion note
-print(f"\nCompleted evaluation of {n_runs} runs for Full RF")

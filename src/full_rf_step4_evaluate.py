@@ -3,14 +3,15 @@ import numpy as np # Used for numerical and scientific computing
 import pandas as pd # Package for csvs and data
 from sklearn.metrics import ( # Imports for performance analysis
     accuracy_score, balanced_accuracy_score, cohen_kappa_score,
-    confusion_matrix, precision_recall_fscore_support
+    confusion_matrix, precision_recall_fscore_support,
+    roc_auc_score  # NEW
 )
 
 # Establishes paths for input data and prediction results
 script_dir = os.path.dirname(__file__)
 results_dir = os.path.join(script_dir, "../results")
 data_dir = os.path.join(script_dir, "../data/processed")
-states = ["ME", "NH", "RI"]
+states = ["NH", "RI", "TX", "MS"]
 threshold = 0.5  # Threshold applied to probabilities
 
 # Evaluate performance for each state
@@ -27,7 +28,7 @@ for state in states:
     # Loads original data to get true targets
     orig_df = pd.read_csv(orig_file)
     if 'Damage_Status' not in orig_df.columns:
-        print(f"No Damage_Status column in original {state} data, skipping") # Shows if can't find
+        print(f"No Damage_Status column in original {state} data, skipping")
         continue
 
     # Converts to binary, 0 for no damage and 1 for damage
@@ -44,7 +45,7 @@ for state in states:
     n_models = all_probs.shape[0]
 
     # Prepares lists to store metrics
-    cms, accs, bals, kaps, precs, recs, f1s = [], [], [], [], [], [], []
+    cms, accs, bals, kaps, precs, recs, f1s, aucs = [], [], [], [], [], [], [], []  # NEW
 
     # Evaluates each model
     for i in range(n_models):
@@ -55,6 +56,7 @@ for state in states:
         accs.append(accuracy_score(y_true, y_pred))
         bals.append(balanced_accuracy_score(y_true, y_pred))
         kaps.append(cohen_kappa_score(y_true, y_pred))
+        aucs.append(roc_auc_score(y_true, all_probs[i]))  # NEW
 
         # These are the class level performance metrics (precision, recall, F1)
         p, r, f1, _ = precision_recall_fscore_support(
@@ -73,6 +75,7 @@ for state in states:
     precs = np.array(precs)
     recs = np.array(recs)
     f1s = np.array(f1s)
+    aucs = np.array(aucs)  # NEW
 
     # Print performance metrics
     print(f"\n{state} Full RF Performance")
@@ -81,6 +84,7 @@ for state in states:
     print(f"\nAccuracy: {accs.mean():.3f} ± {accs.std():.3f}")
     print(f"Balanced Accuracy: {bals.mean():.3f} ± {bals.std():.3f}")
     print(f"Cohen's Kappa: {kaps.mean():.3f} ± {kaps.std():.3f}")
+    print(f"AUC: {aucs.mean():.3f} ± {aucs.std():.3f}")  # NEW
 
     # Goes through each class and shows class specific performance
     for i, cls in enumerate(["No Damage", "Damage"]):
