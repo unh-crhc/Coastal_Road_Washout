@@ -23,9 +23,7 @@ The repository includes
         
 4.	Linear Regression Model
       - Developed in “Fragility Analysis of Coastal Roadways and Performance Assessment of Coastal Transportation Systems Subjected to Storm Hazards”          by Darestani et al., 2021.
-      - Trained on Texas data using:
-            - Distance to the coast (Distance_to_Coast_m)
-            -Inundation duration (Inundation_Duration_Min)
+      - Trained on Texas data using: Distance to the coast (Distance_to_Coast_m) and Inundation duration (Inundation_Duration_Min)
       - Performance metrics include accuracy, balanced accuracy, Cohen’s kappa, AUC, and class-specific precision, recall, and F1.
         
 5.	Screening Decision Tree
@@ -37,7 +35,7 @@ Several data sources are included in this repository to support the analysis and
 
 Predictor variables included in the processed datasets represent three general categories: roadway characteristics, topographic conditions, and storm exposure metrics. Roadway variables include attributes such as averaged annual daily traffic, roadway classification, number of lanes, and surface type. Topographic variables were derived from digital elevation models and include elevation and slope-based metrics, as well as measures of relative elevation. Storm exposure variables were derived from observational datasets and include metrics such as water levels, wave heights, and wind conditions. Inundation duration represents the estimated time that a roadway segment was submerged during a storm event and was calculated by comparing roadway elevations to time-series water level observations from nearby tide gauges. Not all roadway variables are available for every state because publicly available roadway GIS datasets vary in content; however, topographic and storm exposure variables were developed consistently across all study areas.
 
-In addition to the processed state datasets, the repository includes a dataset named webb_data.csv, which was developed in prior research and is used for comparison with the machine learning models developed in this study. This dataset contains the variables used to construct a linear regression model based primarily on distance from the coastline and inundation duration. The linear regression model provides a simplified baseline approach against which the performance of the more complex machine learning models can be evaluated. It is further discussed in a paper titled "Fragility Analysis of Coastal Roadways and Performance Assessment of Coastal Transportation Systems Subjected to Storm Hazards" by Darestani and co-authors in 2021. 
+In addition to the processed state datasets, the repository includes a dataset named webb_data.csv, which was developed in prior research and is used for comparison with the machine learning models developed in this study. This dataset contains the variables used to construct a linear regression model based  on distance from the coastline and inundation duration. The linear regression model provides a baseline approach against which the performance of the machine learning models can be evaluated. It is further discussed in a paper titled "Fragility Analysis of Coastal Roadways and Performance Assessment of Coastal Transportation Systems Subjected to Storm Hazards" by Darestani and co-authors in 2021. 
 
 Together, these datasets provide a consistent framework for analyzing coastal roadway damage across multiple geographic regions and storm events, while allowing comparison between traditional statistical models and machine learning approaches. The table below outlines the total number of damaged and undamaged locations in each data set as well as when the damage occured. 
 
@@ -90,14 +88,13 @@ pip install -r requirements.txt
 ```
 
 ### Data Inputs
+The datasets include predictor variables describing roadway characteristics, topographic conditions, and storm exposure. These features were selected based on prior research and their relevance to coastal roadway damage processes. Roadway variables represent the physical and functional characteristics of each road segment. Topographic variables capture the susceptibility of road segments to flooding and wave action. Storm exposure variables characterize the intensity and duration of storm impacts at each location. Together, these features were chosen to represent the primary physical factors that influence whether a roadway experiences damage during coastal storm events.
 
-1.  **Features:** .
-The datasets include predictor variables describing roadway characteristics, topographic conditions, and storm exposure. These features were selected based on prior research and their relevance to coastal roadway damage processes. Roadway variables (e.g., traffic volume, roadway classification, number of lanes, and surface type) represent the physical and functional characteristics of each road segment. Topographic variables (e.g., minimum elevation, slope, and relative elevation) capture the susceptibility of road segments to flooding and wave action. Storm exposure variables (e.g., water levels, wave heights, wind conditions, precipitation, and inundation duration) characterize the intensity and duration of storm impacts at each location. Together, these features were chosen to represent the primary physical factors that influence whether a roadway experiences damage during coastal storm events.
+Several preprocessing steps were required before the features could be used for modeling. Damage locations were first matched to the nearest roadway segments on public road GIS files, and nearby undamaged road segments were selected to provide comparison cases. Predictor variables were then compiled from multiple sources and merged into a single dataset for each state. Some derived variables, such as relative elevation and inundation duration, were calculated from other collected variables. 
 
-Several preprocessing steps were required before the features could be used for modeling. Damage locations were first matched to the nearest roadway segments on public road GIS files, and nearby undamaged road segments were selected to provide comparison cases. Predictor variables were then compiled from multiple sources and merged into a single dataset for each state. Some derived variables, such as relative elevation and inundation duration, were calculated from raw elevation and water-level data to better represent storm exposure conditions.
+Not all states include identical roadway attribute information because the publicly available roadway GIS datasets varied in content. The Maine dataset contains the most complete set of roadway variables, while datasets from other states may include fewer roadway-specific attributes. However, all datasets share a consistent set of topographic and storm exposure variables. When a feature was not available for a particular state, the preprocessing workflow retained the corresponding column and filled missing values with a representative constant value (the median from the training dataset for numerical variables, or most common for categorical variables). This approach ensured a consistent feature structure across datasets so that models could be applied without errors, while preventing unavailable variables from influencing model predictions or breaking model paths.
 
-Not all states include identical roadway attribute information because publicly available roadway GIS datasets vary in content. The Maine dataset contains the most complete set of roadway variables, while datasets from other states may include fewer roadway-specific attributes. However, all datasets share a consistent set of topographic and storm exposure variables. When a feature was not available for a particular state, the preprocessing workflow retained the corresponding column and filled missing values with a representative constant value (typically the median from the training dataset, or most common for categorical variables). This approach ensured a consistent feature structure across datasets so that models could be applied without errors, while preventing unavailable variables from exerting meaningful influence on model predictions.
-
+## Predictor varaibles
 | Variable | Meaning |
 |---------|---------|
 | **Roadway Variables** | |
@@ -136,94 +133,105 @@ Not all states include identical roadway attribute information because publicly 
 | Inundation_Duration_Min | Estimated inundation duration (minutes) |
 
 ---
+## Structure
+The project code is organized into scripts that support model training, model evaluation, model interpretation, and environment management. Each script is designed to perform a specific task within the modeling workflow.
 
-## Reproduction
+### Model Training
+Training scripts develop the predictive models and output performance metrics based on the training and testing datasets. The full random forest model should be trained first, as this script generates the training/testing splits and calibration datasets that are reused by the other models to ensure consistent comparisons.
 
-The analysis proceeds in three stages: Data Preparation, Modeling Execution, and Result Interpretation.
+**Full Random Forest Model**
 
-### Setup and Preparation
-
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/user/coastal-resilience.git
-    cd coastal-resilience
-    ```
-2.  Place all raw data inputs (DEMs, Shapefiles) into the `/data/input/` directory.
-
-### Training RF Models
-
-Several models were developed to predict the likelihood of roadway washout during coastal storm events. Two of the approaches utilize random forest (RF) modeling. The RF approach combines multiple decision trees into a single ensemble model to improve predictive performance and reduce overfitting. Each tree is trained on a slightly different subset of the data, and final predictions are generated through majority voting across all trees.
-
-The model is implemented using a preprocessing and modeling pipeline to ensure consistent data handling and reproducibility. Input variables include roadway characteristics, topographic variables, and storm exposure variables.
-
-**Model configuration:**
-
-- **Algorithm:** Random Forest Classifier  
-- **Number of trees:** 400 decision trees  
-- **Maximum tree depth:** 3 levels  
-- **Feature sampling:** Square root of total features considered at each split (`max_features = sqrt`)  
-- **Bootstrap sampling:** Enabled (training samples drawn with replacement)  
-- **Random seed:** Controlled for reproducibility
-
-The relatively shallow tree depth (maximum depth = 3) was selected to reduce model complexity and improve generalization across geographic regions. Using a large number of trees (400) stabilizes model predictions and reduces variance.
-
-The Random Forest is trained using a preprocessing pipeline that standardizes feature handling and ensures consistent application of transformations during both training and model application.
-
-Multiple Random Forest models are trained using different random seeds. This produces a set of independent models that collectively form an ensemble. The ensemble approach reduces sensitivity to individual training splits and improves robustness of the final predictions.
-
-
-To train the Random Forest models, run the python src/train.py. This file prepares the `.pkl` files corresponding to each model.
-
+Trains the full random forest model using the complete set of predictor variables and generates the dataset splits used by all models.
 ```bash
-python src/train_rf.py
+python3 src/train_rf.py
 ```
 
-*This script generates `washout_model_run_{run}.pkl`.*
+**Three-Feature Random Forest Model**
 
-### Evaluating RF Models
-To evaluate the trained models, run the following command:
-
+Trains a simplified random forest model using a reduced set of three key predictor variables.
 ```bash
-python src/evaluate_rf.py
+python3 src/train_rf_3f.py
 ```
 
-Open the generated files in `/data/output/final_maps/` to view inundation depths and prioritized road segments requiring mitigation.
-
-### Training Decision Tree Models
-
-To train the Decision Tree models, run the python src/train_dt.py. This file prepares the `.pkl` files corresponding to each model.
-
-Decision Tree (DT) classifiers are used in this project as simplified and interpretable models for predicting roadway washout. Unlike the Random Forest models, which combine many trees into an ensemble, each Decision Tree model consists of a single tree that partitions the feature space into decision rules. This approach provides transparent decision thresholds that can be directly interpreted and compared across regions.
-
-Decision Tree models are trained using roadway, topographic, and storm exposure variables. The trees identify threshold values in the predictor variables that separate damaged and undamaged road segments.
-
-The training process produces multiple Decision Tree models using different random seeds. This allows variability in the training process to be evaluated and helps identify consistent splitting patterns across models and states.
-
-**Model configuration:**
-
-- **Algorithm:** Decision Tree Classifier  
-- **Tree depth:** Maximum depth of 3 levels  
-- **Minimum samples per leaf:** 10 observations  
-- **Missing data handling:** Mean-value imputation using `SimpleImputer`  
-- **Random seed:** Controlled for reproducibility
-
-The shallow tree depth was selected to maintain interpretability and prevent overfitting. Limiting the depth produces simple decision rules that can be easily visualized and compared between study regions.
-
-Although a mean-value imputation step is included in the training pipeline, the processed datasets are expected to contain no missing values. The imputer is included primarily to ensure robustness and reproducibility.
-
-Each trained Decision Tree model is saved as a `.pkl` file and can be applied to additional datasets during the model application stage.
-
+**Decision Tree Model**
+Trains a single decision tree model using the standardized training and testing splits.
 ```bash
-python src/train_dt.py
+python3 src/train_dt.py
 ```
 
-*This script generates `washout_model_run_{run}.pkl`.*
-
-### Evaluating Decision Tree Models
-To evaluate the trained models, run the following command:
-
+**Linear Regression Model**
+Trains the linear regression model used as a baseline comparison to the machine learning approaches.
 ```bash
-python src/evaluate_dt.py
+python3 src/train_linear_regression.py
 ```
-This will print the evaluation metrics (e.g., accuracy, precision, recall) for each model and save the results in `/results/predictions.csv`.
+
+### Model Evaluation
+Evaluation scripts apply the trained models to datasets from other states and calculate performance metrics. Models are evaluated using overall accuracy, balanced accuracy, Cohen’s kappa, area under the receiver operating characteristic curve (AUC), and class-specific precision, recall, and F1 scores.
+
+**Full Random Forest Model**
+
+Applies the full random forest model to external state datasets and reports performance metrics.
+```bash
+python3 src/evaluate_rf.py
+```
+
+**Three-Feature Random Forest Model**
+
+Applies the simplified random forest model to external state datasets.
+```bash
+python3 src/evaluate_rf_3f.py
+```
+
+**Decision Tree Model**
+
+Applies the decision tree model to external state datasets.
+```bash
+python3 src/evaluate_dt.py
+```
+
+**Linear Regression Model**
+
+Applies the linear regression model to external state datasets.
+```bash
+python3 src/evaluate_linear_regression.py
+```
+
+**Screening Decision Tree Model**
+
+Applies the screening decision tree model, which is intended for simplified classification and screening-level assessments.
+```bash
+python3 src/evaluate_screening_dt.py
+```
+
+### Model Interpretation
+Interpretation scripts generate SHAP (SHapley Additive exPlanations) plots to help interpret the influence of predictor variables in the full random forest model.
+
+**Average SHAP Plot**
+
+Generates SHAP plots representing the average feature importance across multiple model runs.
+```bash
+python3 src/analysis_average_shap_plot.py
+```
+
+**Individual SHAP Plot**
+
+Generates SHAP plots for a single model run.
+```bash
+python3 src/analysis_individual_shap_plot.py
+```
+
+These scripts help identify which predictor variables contribute most strongly to model predictions.
+
+### Environment Management
+
+**Cleanup Script**
+
+This script removes generated model files, dataset splits, and figure outputs, returning the project directory to a clean state. This can be useful when rerunning the full modeling workflow or preparing a fresh analysis environment.
+```bash
+python3 src/clean_up.py
+```
+
+## Expected Results
+This section outlines the expected results. 
+
 
