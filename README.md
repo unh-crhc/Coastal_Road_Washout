@@ -32,6 +32,22 @@ The repository includes
       - A single, interpretable DT derived from median splits in the best-performing simple DTs across all states.
       - Encodes the most common thresholds governing road vulnerability.
       - Applied across ME, NH, RI, TX, and MS for consistent, rule-based predictions.
+# Data
+Several data sources are included in this repository to support the analysis and modeling of coastal roadway damage. The primary datasets consist of processed CSV files for each study state (Maine, New Hampshire, Rhode Island, Texas, and Mississippi). The term processed indicates that these datasets have been prepared for modeling and analysis. Processing steps included associating observed damage locations with the nearest roadway segments, selecting nearby no-damage road segments for comparison, and compiling predictor variables describing roadway characteristics, topography, and storm exposure. Each processed dataset contains both damaged and undamaged road segments along with the predictor variables used in model development and evaluation.
+
+Predictor variables included in the processed datasets represent three general categories: roadway characteristics, topographic conditions, and storm exposure metrics. Roadway variables include attributes such as averaged annual daily traffic, roadway classification, number of lanes, and surface type. Topographic variables were derived from digital elevation models and include elevation and slope-based metrics, as well as measures of relative elevation. Storm exposure variables were derived from observational datasets and include metrics such as water levels, wave heights, and wind conditions. Inundation duration represents the estimated time that a roadway segment was submerged during a storm event and was calculated by comparing roadway elevations to time-series water level observations from nearby tide gauges. Not all roadway variables are available for every state because publicly available roadway GIS datasets vary in content; however, topographic and storm exposure variables were developed consistently across all study areas.
+
+In addition to the processed state datasets, the repository includes a dataset named webb_data.csv, which was developed in prior research and is used for comparison with the machine learning models developed in this study. This dataset contains the variables used to construct a linear regression model based primarily on distance from the coastline and inundation duration. The linear regression model provides a simplified baseline approach against which the performance of the more complex machine learning models can be evaluated. It is further discussed in a paper titled "Fragility Analysis of Coastal Roadways and Performance Assessment of Coastal Transportation Systems Subjected to Storm Hazards" by Darestani and co-authors in 2021. 
+
+Together, these datasets provide a consistent framework for analyzing coastal roadway damage across multiple geographic regions and storm events, while allowing comparison between traditional statistical models and machine learning approaches. The table below outlines the total number of damaged and undamaged locations in each data set as well as when the damage occured. 
+
+| Document           | # of Damage Locations | # of No Damage Locations | Date(s) of Damage        |
+|:-------------------|----------------------:|--------------------------:|:--------------------------|
+| ME/processed.csv   | 110                  | 550                      | 1/10/2024 and 1/13/2024   |
+| NH/processed.csv   | 7                    | 35                       | 1/10/2024                 |
+| RI/processed.csv   | 8                    | 40                       | 2016–2024                 |
+| TX/processed.csv   | 59                   | 16                       | 9/13/2008                 |
+| MS/processed.csv   | 29                   | 145                      | 2/29/2025                 |
 
 ---
 
@@ -76,9 +92,11 @@ pip install -r requirements.txt
 ### Data Inputs
 
 1.  **Features:** .
-- [ ] explain about your features and why you chose them
-- [ ] Is there any specific preprocessing steps required for the features?
-- [ ] Is there any features missing in the dataset (RI or NH has the same features as ME)? If so, how do you handle them?
+The datasets include predictor variables describing roadway characteristics, topographic conditions, and storm exposure. These features were selected based on prior research and their relevance to coastal roadway damage processes. Roadway variables (e.g., traffic volume, roadway classification, number of lanes, and surface type) represent the physical and functional characteristics of each road segment. Topographic variables (e.g., minimum elevation, slope, and relative elevation) capture the susceptibility of road segments to flooding and wave action. Storm exposure variables (e.g., water levels, wave heights, wind conditions, precipitation, and inundation duration) characterize the intensity and duration of storm impacts at each location. Together, these features were chosen to represent the primary physical factors that influence whether a roadway experiences damage during coastal storm events.
+
+Several preprocessing steps were required before the features could be used for modeling. Damage locations were first matched to the nearest roadway segments on public road GIS files, and nearby undamaged road segments were selected to provide comparison cases. Predictor variables were then compiled from multiple sources and merged into a single dataset for each state. Some derived variables, such as relative elevation and inundation duration, were calculated from raw elevation and water-level data to better represent storm exposure conditions.
+
+Not all states include identical roadway attribute information because publicly available roadway GIS datasets vary in content. The Maine dataset contains the most complete set of roadway variables, while datasets from other states may include fewer roadway-specific attributes. However, all datasets share a consistent set of topographic and storm exposure variables. When a feature was not available for a particular state, the preprocessing workflow retained the corresponding column and filled missing values with a representative constant value (typically the median from the training dataset, or most common for categorical variables). This approach ensured a consistent feature structure across datasets so that models could be applied without errors, while preventing unavailable variables from exerting meaningful influence on model predictions.
 
 | Variable | Meaning |
 |---------|---------|
@@ -133,10 +151,8 @@ The analysis proceeds in three stages: Data Preparation, Modeling Execution, and
 2.  Place all raw data inputs (DEMs, Shapefiles) into the `/data/input/` directory.
 
 ### Training RF Models
-- [ ] Explain about the ensumble RF model and how it works in this project (e.g., how many models, how many trees, what features are used, etc.)
-### Training RF Models
 
-The primary model used in this project is an ensemble Random Forest (RF) classifier developed to predict the likelihood of roadway washout during coastal storm events. The Random Forest approach combines multiple decision trees into a single ensemble model to improve predictive performance and reduce overfitting. Each tree is trained on a slightly different subset of the data, and final predictions are generated through majority voting across all trees.
+Several models were developed to predict the likelihood of roadway washout during coastal storm events. Two of the approaches utilize random forest (RF) modeling. The RF approach combines multiple decision trees into a single ensemble model to improve predictive performance and reduce overfitting. Each tree is trained on a slightly different subset of the data, and final predictions are generated through majority voting across all trees.
 
 The model is implemented using a preprocessing and modeling pipeline to ensure consistent data handling and reproducibility. Input variables include roadway characteristics, topographic variables, and storm exposure variables.
 
@@ -174,7 +190,6 @@ python src/evaluate_rf.py
 Open the generated files in `/data/output/final_maps/` to view inundation depths and prioritized road segments requiring mitigation.
 
 ### Training Decision Tree Models
-- [ ] Explain about the decision tree model and how it works in this project (e.g., how many models, what features are used, etc.)
 
 To train the Decision Tree models, run the python src/train_dt.py. This file prepares the `.pkl` files corresponding to each model.
 
@@ -194,7 +209,7 @@ The training process produces multiple Decision Tree models using different rand
 
 The shallow tree depth was selected to maintain interpretability and prevent overfitting. Limiting the depth produces simple decision rules that can be easily visualized and compared between study regions.
 
-Although a mean-value imputation step is included in the training pipeline, the processed datasets are expected to contain minimal or no missing values. The imputer is included primarily to ensure robustness and reproducibility.
+Although a mean-value imputation step is included in the training pipeline, the processed datasets are expected to contain no missing values. The imputer is included primarily to ensure robustness and reproducibility.
 
 Each trained Decision Tree model is saved as a `.pkl` file and can be applied to additional datasets during the model application stage.
 
