@@ -10,15 +10,12 @@ The repository includes
       - Evaluated on accuracy, balanced accuracy, Cohen’s kappa, AUC, and class-specific precision, recall, and F1.
   	
 2.	Three-Feature Random Forest Model:
-      - Trained on Maine data using three key features:
-            - Minimum elevation (Z_Min)
-            - Distance to the coast (Distance_to_Coast_m)
-            - Relative minimum elevation (Rel_Elev_Min)
+      - Trained on Maine data using three key features: Minimum elevation (Z_Min), Distance to the coast (Distance_to_Coast_m), and Relative minimum elevation (Rel_Elev_Min)
       - Demonstrates that a small set of key variables can strongly predict road vulnerability.
       - Maintains performance comparable to the full RF model.
         
 3.	Simple Decision Tree (DT) Model
-      - Trained on Maine data using the same three key features. 
+      - Trained on Maine data using the same three key features as the Three-Feature Random Forest. 
       - Allows interpretable rules for road damage risk classification.
         
 4.	Linear Regression Model
@@ -35,7 +32,7 @@ Several data sources are included in this repository to support the analysis and
 
 Predictor variables included in the processed datasets represent three general categories: roadway characteristics, topographic conditions, and storm exposure metrics. Roadway variables include attributes such as averaged annual daily traffic, roadway classification, number of lanes, and surface type. Topographic variables were derived from digital elevation models and include elevation and slope-based metrics, as well as measures of relative elevation. Storm exposure variables were derived from observational datasets and include metrics such as water levels, wave heights, and wind conditions. Inundation duration represents the estimated time that a roadway segment was submerged during a storm event and was calculated by comparing roadway elevations to time-series water level observations from nearby tide gauges. Not all roadway variables are available for every state because publicly available roadway GIS datasets vary in content; however, topographic and storm exposure variables were developed consistently across all study areas.
 
-In addition to the processed state datasets, the repository includes a dataset named webb_data.csv, which was developed in prior research and is used for comparison with the machine learning models developed in this study. This dataset contains the variables used to construct a linear regression model based  on distance from the coastline and inundation duration. The linear regression model provides a baseline approach against which the performance of the machine learning models can be evaluated. It is further discussed in a paper titled "Fragility Analysis of Coastal Roadways and Performance Assessment of Coastal Transportation Systems Subjected to Storm Hazards" by Darestani and co-authors in 2021. 
+In addition to the processed state datasets, the repository includes a dataset named webb_data.csv, which was developed in prior research and is used for comparison with the machine learning models developed in this study. This dataset contains the variables used to construct a linear regression model based  on distance from the coastline and inundation duration. The linear regression model provides a baseline approach against which the performance of the machine learning models can be evaluated. It is developed in a paper titled "Fragility Analysis of Coastal Roadways and Performance Assessment of Coastal Transportation Systems Subjected to Storm Hazards" by Darestani and co-authors in 2021. 
 
 Together, these datasets provide a consistent framework for analyzing coastal roadway damage across multiple geographic regions and storm events, while allowing comparison between traditional statistical models and machine learning approaches. The table below outlines the total number of damaged and undamaged locations in each data set as well as when the damage occured. 
 
@@ -137,7 +134,7 @@ Not all states include identical roadway attribute information because the publi
 The project code is organized into scripts that support model training, model evaluation, model interpretation, and environment management. Each script is designed to perform a specific task within the modeling workflow.
 
 ### Model Training
-Training scripts develop the predictive models and output performance metrics based on the training and testing datasets. The full random forest model should be trained first, as this script generates the training/testing splits and calibration datasets that are reused by the other models to ensure consistent comparisons.
+Training scripts develop the predictive models and output performance metrics based on the training and testing datasets. **The full random forest model should be trained first**, as this script generates the training/testing splits and calibration datasets that are reused by the other models to ensure consistent comparisons.
 
 **Full Random Forest Model**
 
@@ -154,12 +151,14 @@ python3 src/train_rf_3f.py
 ```
 
 **Decision Tree Model**
+
 Trains a single decision tree model using the standardized training and testing splits.
 ```bash
 python3 src/train_dt.py
 ```
 
 **Linear Regression Model**
+
 Trains the linear regression model used as a baseline comparison to the machine learning approaches.
 ```bash
 python3 src/train_linear_regression.py
