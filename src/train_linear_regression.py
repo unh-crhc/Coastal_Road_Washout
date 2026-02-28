@@ -54,7 +54,6 @@ scaler = StandardScaler()
 # 3. Fit to training data AND transform it
 X = scaler.fit_transform(X)
 
-
 # Linear regression model
 model = LinearRegression()
 model.fit(X, y)
