@@ -3,6 +3,7 @@ import pandas as pd # Package for csvs and data
 import numpy as np # Used for numerical and scientific computing
 import matplotlib.pyplot as plt # For plotting
 import joblib # Used for parallel computing, common in data science
+from sklearn.preprocessing import StandardScaler
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import (
@@ -46,6 +47,13 @@ features = [
 
 X = df[features].apply(pd.to_numeric, errors="coerce").values
 y = df["Damage_Binary"].values
+
+# 2. Initialize the scaler
+scaler = StandardScaler()
+
+# 3. Fit to training data AND transform it
+X = scaler.fit_transform(X)
+
 
 # Linear regression model
 model = LinearRegression()

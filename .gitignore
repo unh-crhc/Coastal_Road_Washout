@@ -1,3 +1,5 @@
 *.pkl
 *.npy
 results/
+splits/
+models/
