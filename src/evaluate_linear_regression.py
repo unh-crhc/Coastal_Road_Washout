@@ -13,11 +13,6 @@ from sklearn.metrics import (
     confusion_matrix
 )
 
-# Print library versions for reproducibility
-import sklearn
-print("scikit-learn version:", sklearn.__version__)
-print("numpy version:", np.__version__)
-
 # Model inputs, target value, states applied to
 target_column = 'Damage_Status'
 states = ["ME", "NH", "RI", "MS"]
@@ -27,9 +22,8 @@ features = [
     "Inundation_Duration_Min"
 ]
 
-# Directory Structure: Used same path handling as training script
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
+# Directory structure
+script_dir = os.path.dirname(__file__)
 models_dir = os.path.join(script_dir, "../models")
 results_dir = os.path.join(script_dir, "../results")
 data_dir = os.path.join(script_dir, "../data/processed")
@@ -41,10 +35,6 @@ model_path = os.path.join(models_dir, "linear_regression_TX.pkl")
 model = joblib.load(model_path)
 
 print("\n Applying TX Linear Regression Model")
-
-# Print model parameters for verification
-print("\nModel Coefficients:", model.coef_)
-print("Model Intercept:", model.intercept_)
 
 # Loop through states
 for state in states:
@@ -61,10 +51,6 @@ for state in states:
     })
 
     df = df.dropna(subset=["Damage_Binary"])
-
-    # Print feature ranges to detect unit differences
-    print("\nFeature statistics:")
-    print(df[features].describe())
     
     # Features
     X = df[features].apply(pd.to_numeric, errors="coerce").values
@@ -72,12 +58,6 @@ for state in states:
 
     # Predictions
     y_score = model.predict(X)
-    
-    # Print prediction distribution for debugging
-    print("\nPrediction statistics:")
-    print("Min:", y_score.min())
-    print("Max:", y_score.max())
-    print("Mean:", y_score.mean())
 
     # Classification (threshold = 0.5)
     y_hat = (y_score >= 0.5).astype(int)
@@ -106,13 +86,3 @@ for state in states:
 
     for k, v in metrics.items():
         print(f"{k}: {v:.3f}")
-    
-    # Save predictions for debugging
-    df["Prediction_Score"] = y_score
-    df["Prediction_Class"] = y_hat
-
-    output_file = os.path.join(results_dir, f"{state}_linear_predictions.csv")
-    df.to_csv(output_file, index=False)
-
-    print(f"\nSaved predictions to: {output_file}")
-    
