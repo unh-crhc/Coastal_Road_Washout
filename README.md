@@ -96,9 +96,9 @@ The predictor variables in the processed datasets are listed below.
 # Requirements
 
 ## Software Dependencies
-List of all the software dependencies required to run the project, including their minimum versions and any specific notes about installation or compatibility.
+List of all software dependencies required to run the project, along with the specific package versions that should be used and any relevant installation or compatibility notes. Because this repository may not be actively maintained in the future, using these fixed versions will help ensure reproducibility of the results.
 
-| Component | Minimum Version | Notes |
+| Component | Required Version | Notes |
 | :--- | :--- | :--- |
 | Python | 3.10 | Required for geospatial scripting. |
 | numpy | 1.22 | Used for numerical operations. |
@@ -233,11 +233,11 @@ This section outlines the expected results from the application of each model.
 | AUC | 0.83 (0.06) | 0.45 (0.06) | 0.45 (0.05) | 0.58 (0.07) | 0.82 (0.03) |
 | **No Damage Class** ||||| |
 | Precision | 0.78 (0.08) | 0.77 (0.08) | 0.83 (0.02) | 0.04 (0.14) | 0.99 (0.02) |
-| Recall | 0.70 (0.11) | 0.24 (0.09) | 0.72 (0.13) | 0.03 (0.10) | 0.52 (0.09) |
+| Recall | 0.70 (0.11) | 0.24 (0.09) | 0.72 (0.13) | 0.03 (0.10) | 0.51 (0.09) |
 | F1 Score | 0.73 (0.08) | 0.35 (0.11) | 0.77 (0.08) | 0.02 (0.06) | 0.67 (0.09) |
 | **Damage Class** ||||| |
 | Precision | 0.73 (0.07) | 0.15 (0.02) | 0.16 (0.08) | 0.78 (0.03) | 0.29 (0.03) |
-| Recall | 0.79 (0.09) | 0.67 (0.14) | 0.26 (0.12) | 0.97 (0.11) | 0.97 (0.05) |
+| Recall | 0.79 (0.09) | 0.66 (0.14) | 0.26 (0.12) | 0.97 (0.11) | 0.97 (0.05) |
 | F1 Score | 0.76 (0.06) | 0.24 (0.04) | 0.19 (0.08) | 0.86 (0.09) | 0.45 (0.04) |
 
 ### Three-Feature Random Forest Results
@@ -245,7 +245,7 @@ This section outlines the expected results from the application of each model.
 |-------|-------|---------------|--------------|-------|-------------|
 | **Overall Performance** ||||| |
 | Accuracy | 0.74 (0.06) | 0.41 (0.07) | 0.82 (0.02) | 0.78 (0.03) | 0.70 (0.07) |
-| Balanced Accuracy | 0.74 (0.06) | 0.50 (0.07) | 0.51 (0.03) | 0.50 (0.03) | 0.78 (0.07) |
+| Balanced Accuracy | 0.74 (0.06) | 0.59 (0.06) | 0.51 (0.03) | 0.50 (0.03) | 0.78 (0.07) |
 | Cohen’s Kappa | 0.49 (0.12) | 0.08 (0.06) | 0.02 (0.07) | 0.01 (0.05) | 0.34 (0.10) |
 | AUC | 0.80 (0.07) | 0.67 (0.06) | 0.44 (0.05) | 0.51 (0.17) | 0.84 (0.04) |
 | **No Damage Class** ||||| |
@@ -253,7 +253,7 @@ This section outlines the expected results from the application of each model.
 | Recall | 0.67 (0.11) | 0.32 (0.08) | 0.97 (0.03) | 0.02 (0.07) | 0.65 (0.11) |
 | F1 Score | 0.72 (0.08) | 0.47 (0.09) | 0.90 (0.01) | 0.02 (0.07) | 0.78 (0.07) |
 | **Damage Class** ||||| |
-| Precision | 0.72 (0.07) | 0.20 (0.03) | 0.09 (0.16) | 0.79 (0.01) | 0.34 (0.06) |
+| Precision | 0.72 (0.07) | 0.20 (0.03) | 0.09 (0.16) | 0.79 (0.01) | 0.35 (0.06) |
 | Recall | 0.82 (0.08) | 0.86 (0.09) | 0.04 (0.07) | 0.99 (0.05) | 0.90 (0.19) |
 | F1 Score | 0.76 (0.06) | 0.33 (0.04) | 0.06 (0.10) | 0.88 (0.02) | 0.49 (0.08) |
 
@@ -262,13 +262,13 @@ This section outlines the expected results from the application of each model.
 | ----------------------- | ----------- | ------------- | ------------ | ----------- | ----------- |
 | **Overall Performance** |             |               |              |             |             |
 | Accuracy                | 0.73 (0.06) | 0.36 (0.10)   | 0.80 (0.05)  | 0.77 (0.09) | 0.61 (0.11) |
-| Balanced Accuracy       | 0.73 (0.06) | 0.56 (0.09)   | 0.52 (0.04)  | 0.51 (0.02) | 0.73 (0.08) |
+| Balanced Accuracy       | 0.73 (0.06) | 0.56 (0.10)   | 0.52 (0.04)  | 0.51 (0.02) | 0.73 (0.08) |
 | Cohen’s Kappa           | 0.45 (0.13) | 0.05 (0.09)   | 0.06 (0.10)  | 0.01 (0.04) | 0.25 (0.10) |
 | AUC                     | 0.78 (0.07) | 0.61 (0.10)   | 0.50 (0.07)  | 0.50 (0.05) | 0.74 (0.08) |
 | **No Damage Class**     |             |               |              |             |             |
 | Precision               | 0.79 (0.09) | 0.90 (0.14)   | 0.84 (0.01)  | 0.04 (0.17) | 0.98 (0.04) |
 | Recall                  | 0.64 (0.11) | 0.27 (0.12)   | 0.94 (0.07)  | 0.05 (0.19) | 0.55 (0.16) |
-| F1 Score                | 0.70 (0.08) | 0.40 (0.13)   | 0.89 (0.04)  | 0.03 (0.09) | 0.68 (0.13) |
+| F1 Score                | 0.70 (0.08) | 0.40 (0.12)   | 0.89 (0.04)  | 0.03 (0.09) | 0.68 (0.13) |
 | **Damage Class**        |             |               |              |             |             |
 | Precision               | 0.70 (0.06) | 0.19 (0.04)   | 0.18 (0.19)  | 0.79 (0.03) | 0.30 (0.07) |
 | Recall                  | 0.81 (0.12) | 0.85 (0.17)   | 0.10 (0.11)  | 0.96 (0.16) | 0.91 (0.23) |
