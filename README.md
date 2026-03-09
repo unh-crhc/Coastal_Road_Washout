@@ -115,9 +115,16 @@ List of all software dependencies required to run the project, along with the sp
 Install required Python libraries using the provided environment file:
 
 ## Install Dependencies
-
+// TODO: add conda environment file and instructions for setting up the conda environment
 ```bash
 pip install -r requirements.txt
+```
+or in case of conda environment:
+```bash
+conda create -n coastal python=3.10
+conda activate coastal
+pip install -r requirements.txt
+# or conda install --file requirements.txt
 ```
 
 ---
