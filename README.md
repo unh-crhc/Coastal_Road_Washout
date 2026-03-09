@@ -94,7 +94,7 @@ The predictor variables in the processed datasets are listed below.
 ---
 
 # Requirements
-
+# TODO: set it up such that we can download the checkpoint and evaluate the model
 ## Software Dependencies
 List of all software dependencies required to run the project, along with the specific package versions that should be used and any relevant installation or compatibility notes. Because this repository may not be actively maintained in the future, using these fixed versions will help ensure reproducibility of the results.
 

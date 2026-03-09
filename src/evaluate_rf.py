@@ -112,7 +112,6 @@ platt.fit(probs_calib.reshape(-1,1), y_calib)
 
 # Processess and applies to each state
 for state in states:
-
     print(f"Processing {state}...")
     
     # Loads the data
@@ -122,16 +121,12 @@ for state in states:
     if "Damage_Status" not in df.columns:
         print(f"No Damage_Status column in {state} data, skipping evaluation.")
         continue
-    
+
     # Convert ground truth: allow either already {0,1} or strings
-    if df["Damage_Status"].dtype == object:
-        y_true = df["Damage_Status"].map({"No Damage": 0, "Damage": 1}).astype(int).values
-    else:
-        y_true = df["Damage_Status"].astype(int).values
+    y_true = df["Damage_Status"].map({"No Damage": 0, "Damage": 1}).astype(int).values
 
     # Align columns to training data
     X = align_schema(df, input_features)
-
 
     # Collects the model probabilities
     all_probs = np.array([m.predict_proba(X)[:,1] for m in models])
