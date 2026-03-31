@@ -94,7 +94,6 @@ The predictor variables in the processed datasets are listed below.
 ---
 
 # Requirements
-# TODO: set it up such that we can download the checkpoint and evaluate the model
 ## Software Dependencies
 List of all software dependencies required to run the project, along with the specific package versions that should be used and any relevant installation or compatibility notes. Because this repository may not be actively maintained in the future, using these fixed versions will help ensure reproducibility of the results.
 
@@ -115,7 +114,6 @@ List of all software dependencies required to run the project, along with the sp
 Install required Python libraries using the provided environment file:
 
 ## Install Dependencies
-// TODO: add conda environment file and instructions for setting up the conda environment
 ```bash
 pip install -r requirements.txt
 ```
@@ -126,6 +124,43 @@ conda activate coastal
 pip install -r requirements.txt
 # or conda install --file requirements.txt
 ```
+
+## Using Downloaded Checkpoints
+Evaluation scripts load saved checkpoints directly from the repository folders, so you do not need to retrain the models if you already have a downloaded checkpoint archive. The expected locations are:
+
+- `models/` for all model checkpoint files (`.pkl`)
+- `splits/full_rf_calibration_holdout.csv` for probability calibration used by `evaluate_rf.py`, `evaluate_rf_3f.py`, and `evaluate_dt.py`
+
+If the downloaded zip already preserves the repository layout, unzip it from the repository root:
+
+```bash
+unzip path/to/model_checkpoints.zip -d .
+```
+
+If the zip extracts into its own folder, copy the files into the locations expected by the code:
+
+```bash
+mkdir -p models splits
+unzip path/to/model_checkpoints.zip -d /tmp/coastal_checkpoints
+cp /tmp/coastal_checkpoints/models/*.pkl models/
+cp /tmp/coastal_checkpoints/splits/full_rf_calibration_holdout.csv splits/
+```
+
+After the files are in place, you can run the evaluation scripts directly:
+
+```bash
+python3 src/evaluate_rf.py
+python3 src/evaluate_rf_3f.py
+python3 src/evaluate_dt.py
+```
+
+The expected checkpoint filenames are:
+
+- `models/full_rf_model_run_*.pkl`
+- `models/three_feature_rf_model_run_*.pkl`
+- `models/simple_dt_model_run_*.pkl`
+
+If `splits/full_rf_calibration_holdout.csv` is missing, run `python3 src/train_rf.py` once to regenerate the calibration holdout and the full random forest checkpoints.
 
 ---
 

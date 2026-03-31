@@ -88,7 +88,6 @@ for state in states:
         continue
 
     # Convert ground truth: allow either already {0,1} or strings
-    import ipdb; ipdb.set_trace()
     y_true = df["Damage_Status"].map({"No Damage": 0, "Damage": 1}).astype(int).values
 
      # Predictor matrix
