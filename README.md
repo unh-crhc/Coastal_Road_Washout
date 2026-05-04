@@ -1,7 +1,10 @@
 # Coastal Road Resilience
 
 ## Project Overview
-This repository contains the code and workflows for predicting coastal road washout using machine learning, based on observed roadway damage data from Maine (ME), New Hampshire (NH), Rhode Island (RI), Texas (TX), and Mississippi (MS). The project explores both full-feature and simplified predictive models, evaluates their transferability across states, and includes a linear regression approach derived from Texas data.
+This repository contains the code and workflows for predicting coastal road
+washout using machine learning, based on observed roadway damage data from Maine
+(ME), New Hampshire (NH), Rhode Island (RI), Texas (TX), and Mississippi
+(MS). The project explores both full-feature and simplified predictive models and evaluates their transferability across states.
 
 The repository includes
 1.	Full Random Forest (RF) Model:
